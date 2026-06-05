@@ -11,9 +11,10 @@
 # The base image already ships build-base, and the lua5.1 package provides the
 # unversioned `lua` / `luac` binaries on PATH, so no extra setup is required.
 #
-# Pin BASE to a digest for fully reproducible builds when desired:
-#   --build-arg BASE=ghcr.io/eloylp/agents-runner@sha256:...
-ARG BASE=ghcr.io/eloylp/agents-runner:latest
+# BASE is pinned to an immutable digest for reproducible builds. The
+# base-image sync agent bumps this digest via PR when the upstream
+# eloylp/agents-runner:latest tag advances; do not change it by hand.
+ARG BASE=ghcr.io/eloylp/agents-runner@sha256:970667ea659579da20cd94596814a510a25fc2ef5fb987c0f61f2d3a5f3beb9d
 FROM ${BASE}
 
 USER root
