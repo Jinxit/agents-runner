@@ -24,9 +24,9 @@ comes from the upstream base image.
 
 ## tweakcc layer
 
-[tweakcc](https://github.com/Piebald-AI/tweakcc) patches the Claude Code native
-binary at image build time. The `model-customizations` patch (`id:
-model-customizations`) enables all Claude models in the `/model` picker.
+tweakcc patches the Claude Code native binary at image build time. The
+`model-customizations` patch (`id: model-customizations`) enables all Claude
+models in the `/model` picker.
 
 ### Version coupling
 
@@ -37,8 +37,7 @@ added support for that CC version the Docker build **fails loudly** — this is
 intentional and preferable to a silent bad patch.
 
 **To recover from a mismatch:**
-1. Check the [tweakcc releases](https://github.com/Piebald-AI/tweakcc/releases)
-   for a version that supports the new CC release.
+1. Check the tweakcc releases for a version that supports the new CC release.
 2. Update the pinned `tweakcc@<version>` in the `Dockerfile` accordingly.
 3. Open a PR with both the base-image digest bump and the tweakcc version bump.
 
