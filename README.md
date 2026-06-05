@@ -5,8 +5,7 @@ Custom runner image for the ArcUI fleet, managed by the
 
 It is a thin layer on top of the upstream
 [`ghcr.io/eloylp/agents-runner`](https://github.com/eloylp/agents) image,
-adding the Lua 5.1 toolchain so fleet agents can syntax-check and lint World of
-Warcraft addon Lua before opening pull requests.
+adding the Lua 5.1 toolchain and a tweakcc patch to the Claude Code binary.
 
 ## What it adds
 
@@ -16,9 +15,35 @@ Warcraft addon Lua before opening pull requests.
   load time.
 - `luacheck` — static linter. Configure with `std = "lua51"` plus the addon's
   WoW globals in the consuming repository's `.luacheckrc`.
+- **tweakcc `model-customizations` patch** — unlocks the full Claude model list
+  in `claude`'s `/model` picker. Without this patch only the default three models
+  are shown; with it every available model is selectable.
 
 Everything else (Claude Code, Codex, `gh`, git, Go, Rust, Node, TypeScript)
 comes from the upstream base image.
+
+## tweakcc layer
+
+[tweakcc](https://github.com/Piebald-AI/tweakcc) patches the Claude Code native
+binary at image build time. The `model-customizations` patch (`id:
+model-customizations`) enables all Claude models in the `/model` picker.
+
+### Version coupling
+
+tweakcc matches patterns inside the CC binary, so it is tied to the specific
+Claude Code version installed by the base image. When the base-image sync bumps
+the CC version, tweakcc re-runs against the new binary. If tweakcc has not yet
+added support for that CC version the Docker build **fails loudly** — this is
+intentional and preferable to a silent bad patch.
+
+**To recover from a mismatch:**
+1. Check the [tweakcc releases](https://github.com/Piebald-AI/tweakcc/releases)
+   for a version that supports the new CC release.
+2. Update the pinned `tweakcc@<version>` in the `Dockerfile` accordingly.
+3. Open a PR with both the base-image digest bump and the tweakcc version bump.
+
+To revert the patch for debugging, run `npx tweakcc@<pinned-version> --restore`
+inside a container built from the base image (before the tweakcc layer).
 
 ## Build
 
