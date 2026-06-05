@@ -3,7 +3,8 @@
 #
 # Thin layer on top of the upstream eloylp agents-runner. Adds the Lua 5.1
 # toolchain (luac + luacheck) so fleet agents can syntax-check and lint WoW
-# addon Lua before opening pull requests.
+# addon Lua before opening pull requests, and applies tweakcc to unlock the
+# full Claude Code model list.
 #
 # WoW runs Lua 5.1, so luac 5.1 matches the in-game parser exactly. luacheck
 # should be configured with std = "lua51" (plus the addon's WoW globals) in the
@@ -11,6 +12,12 @@
 #
 # The base image already ships build-base, and the lua5.1 package provides the
 # unversioned `lua` / `luac` binaries on PATH, so no extra setup is required.
+#
+# tweakcc patches the installed Claude Code binary (a native compiled bundle) to
+# expose all available models in the /model picker, not just the default three.
+# The version is pinned; bump it deliberately alongside Claude Code version
+# upgrades. If tweakcc does not yet support the installed CC version the build
+# will fail loudly — this is intentional.
 #
 # BASE is pinned to an immutable digest for reproducible builds. The
 # base-image sync agent bumps this digest via PR when the upstream
@@ -21,4 +28,8 @@ FROM ${BASE}
 USER root
 RUN apk add --no-cache lua5.1 lua5.1-dev luarocks5.1 \
     && luarocks-5.1 install luacheck
+USER agents
+
+USER root
+RUN npx -y tweakcc@4.0.14 --apply --patches model-customizations
 USER agents
