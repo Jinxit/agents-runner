@@ -1,0 +1,3 @@
+# Normalize all text to LF in the repository. Keeps the Dockerfile and CI
+# workflow byte-identical regardless of the checkout platform.
+* text=auto eol=lf
