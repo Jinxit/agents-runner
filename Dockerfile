@@ -34,6 +34,11 @@ ARG BASE=ghcr.io/eloylp/agents-runner@sha256:970667ea659579da20cd94596814a510a25
 # Clones latest wowless HEAD and builds wowless_wow with vcpkg/cmake, including
 # TACT client data download. The resulting binary + data are copied into the
 # final image; all build tooling stays in this stage.
+#
+# BuildKit cache mounts persist vcpkg downloads and binary-cached packages
+# across builds. Since `git clone --depth 1` always fetches HEAD, the layer
+# cache is invalidated on every new wowless commit — but the vcpkg caches
+# survive, skipping the expensive dependency download + compile.
 FROM alpine:3 AS wowless-builder
 
 RUN apk add --no-cache \
@@ -43,8 +48,12 @@ RUN apk add --no-cache \
 WORKDIR /build/wowless
 RUN git clone --depth 1 https://github.com/wowless/wowless.git .
 RUN git submodule update --init --depth 1
-RUN cmake --preset default
-RUN cmake --build --preset default --target wowless_wow wow
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    --mount=type=cache,target=/build/wowless/vcpkg/downloads \
+    cmake --preset default
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    --mount=type=cache,target=/build/wowless/vcpkg/downloads \
+    cmake --build --preset default --target wowless_wow wow
 
 RUN mkdir -p /opt/wowless \
     && WOW_BIN=$(find build -name "wowless_wow" -type f -not -path "*/products/*") \
