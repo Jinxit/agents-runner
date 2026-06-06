@@ -61,3 +61,27 @@ jobs:
             docker run --rm "$SHA_TAG" cat /opt/wowless/products/wow/WowlessData/build.lua
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Update fleet runner image
+        if: github.event_name != 'pull_request'
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          AGENTS_API_URL: ${{ secrets.AGENTS_API_URL }}
+          AGENTS_API_TOKEN: ${{ secrets.AGENTS_API_TOKEN }}
+        run: |
+          SHA_TAG=$(echo "$TAGS" | grep "sha-" | head -1)
+          if [ -z "$AGENTS_API_URL" ] || [ -z "$AGENTS_API_TOKEN" ]; then
+            echo "::warning::AGENTS_API_URL or AGENTS_API_TOKEN not set, skipping fleet update"
+            exit 0
+          fi
+          for workspace in arcui infra; do
+            echo "Updating workspace '$workspace' to $SHA_TAG"
+            curl -sf --max-time 10 \
+              -X PATCH \
+              -H "Authorization: Bearer $AGENTS_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"runner_image\": \"$SHA_TAG\"}" \
+              "$AGENTS_API_URL/workspaces/$workspace/runtime" \
+            && echo " ✓ $workspace updated" \
+            || echo "::warning::Failed to update workspace '$workspace'"
+          done
