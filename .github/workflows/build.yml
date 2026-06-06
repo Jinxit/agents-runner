@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
     tags: ['v*']
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -41,3 +44,16 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Log WoW build number
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          SHA_TAG=$(echo "$TAGS" | grep "sha-" | head -1)
+          docker pull "$SHA_TAG"
+          {
+            echo "## WoW Client Build"
+            echo '```'
+            docker run --rm "$SHA_TAG" cat /opt/wowless/products/wow/WowlessData/build.lua
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
