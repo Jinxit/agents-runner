@@ -22,8 +22,15 @@
 #
 # wowless is a headless WoW client Lua/FrameXML interpreter built in the
 # wowless-builder stage and installed at /opt/wowless/. The binary is invoked as:
-#   /opt/wowless/wowless_wow run -p wow --addondir /path/to/addons
-# The TACT client data is stored alongside the binary under /opt/wowless/products/.
+#   cd /opt/wowless && ./wowless_wow run -p wow --addondir /path/to/addons
+# The binary embeds all Lua code (via lua2c) but needs runtime data on disk,
+# resolved relative to CWD via hardcoded `build/...` paths:
+#   build/wow_schema.sqlite3        — WoW schema DB (always needed)
+#   build/wow_data.sqlite3          — WoW data DB (needed without --lite)
+#   build/products/<product>/       — TACT product data + WowlessData addon
+#   build/extracts/<product>/       — extracted FrameXML (needed without --lite)
+# A compat symlink /opt/wowless/products -> build/products is kept so the
+# build workflow can read build info at the previously documented path.
 #
 # BASE is pinned to an immutable digest for reproducible builds. The
 # base-image sync agent bumps this digest via PR when the upstream
@@ -55,11 +62,15 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/build/wowless/vcpkg/downloads \
     cmake --build --preset default --target wowless_wow wow
 
-RUN mkdir -p /opt/wowless \
+RUN mkdir -p /opt/wowless/build \
     && WOW_BIN=$(find build -name "wowless_wow" -type f -not -path "*/products/*") \
     && cp "$WOW_BIN" /opt/wowless/wowless_wow \
     && chmod +x /opt/wowless/wowless_wow \
-    && cp -r build/products /opt/wowless/
+    && cp -r build/products /opt/wowless/build/products \
+    && ln -sfn build/products /opt/wowless/products \
+    && find build -maxdepth 1 -name "*.sqlite3" -exec cp {} /opt/wowless/build/ \; \
+    && if [ -d build/extracts ]; then cp -r build/extracts /opt/wowless/build/extracts; fi \
+    && if [ -d build/addon ]; then cp -r build/addon /opt/wowless/build/addon; fi
 
 # ── final image ───────────────────────────────────────────────────────────────
 FROM ${BASE}
