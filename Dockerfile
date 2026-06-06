@@ -44,7 +44,7 @@ WORKDIR /build/wowless
 RUN git clone --depth 1 https://github.com/wowless/wowless.git .
 RUN git submodule update --init --depth 1
 RUN cmake --preset default
-RUN cmake --build --preset default --target wowless_wow
+RUN cmake --build --preset default --target wowless_wow wow
 
 RUN mkdir -p /opt/wowless \
     && WOW_BIN=$(find build -name "wowless_wow" -type f -not -path "*/products/*") \
