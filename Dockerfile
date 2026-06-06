@@ -37,7 +37,7 @@ ARG BASE=ghcr.io/eloylp/agents-runner@sha256:970667ea659579da20cd94596814a510a25
 FROM alpine:3 AS wowless-builder
 
 RUN apk add --no-cache \
-    bash cmake curl g++ git linux-headers musl-dev \
+    bash cmake curl g++ gcompat git linux-headers musl-dev \
     ninja perl pkgconf python3 tar unzip zip
 
 WORKDIR /build/wowless
