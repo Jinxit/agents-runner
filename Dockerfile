@@ -35,6 +35,9 @@ RUN apk add --no-cache \
     bash cmake curl g++ gcompat git linux-headers make musl-dev \
     ninja perl pkgconf python3 tar unzip zip
 
+ENV CFLAGS="-Wno-attributes" \
+    CXXFLAGS="-Wno-attributes"
+
 WORKDIR /build/wowless
 RUN git clone --depth 1 https://github.com/wowless/wowless.git .
 RUN git submodule update --init --depth 1
