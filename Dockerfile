@@ -29,14 +29,11 @@ ARG BASE=ghcr.io/eloylp/agents-runner@sha256:970667ea659579da20cd94596814a510a25
 #
 # BuildKit only processes this stage when the runner-wowless target is
 # requested; builds targeting runner skip it entirely.
-FROM alpine:3 AS wowless-builder
+FROM alpine:3.22 AS wowless-builder
 
 RUN apk add --no-cache \
     bash cmake curl g++ gcompat git linux-headers make musl-dev \
     ninja perl pkgconf python3 tar unzip zip
-
-ENV CFLAGS="-Wno-attributes" \
-    CXXFLAGS="-Wno-attributes"
 
 WORKDIR /build/wowless
 RUN git clone --depth 1 https://github.com/wowless/wowless.git .
