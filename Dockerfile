@@ -40,11 +40,7 @@ RUN git clone --depth 1 https://github.com/wowless/wowless.git .
 RUN git submodule update --init --depth 1
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/build/wowless/vcpkg/downloads \
-    cmake --preset default \
-    || { echo "=== vcpkg build logs ==="; \
-         for f in vcpkg/buildtrees/*/install-*.log vcpkg/buildtrees/*/config-*.log; do \
-           [ -f "$f" ] && echo "--- $f ---" && tail -n100 "$f"; \
-         done; exit 1; }
+    cmake --preset default
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/build/wowless/vcpkg/downloads \
     cmake --build --preset default --target wowless_wow wow
