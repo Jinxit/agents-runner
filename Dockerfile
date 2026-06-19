@@ -38,6 +38,10 @@ RUN apk add --no-cache \
 WORKDIR /build/wowless
 RUN git clone --depth 1 https://github.com/wowless/wowless.git .
 RUN git submodule update --init --depth 1
+RUN printf '%s\n' \
+    'set(VCPKG_C_FLAGS "${VCPKG_C_FLAGS} -D_LARGEFILE64_SOURCE")' \
+    'set(VCPKG_CXX_FLAGS "${VCPKG_CXX_FLAGS} -D_LARGEFILE64_SOURCE")' \
+    >> vcpkg/triplets/x64-linux.cmake
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/build/wowless/vcpkg/downloads \
     cmake --preset default
