@@ -42,8 +42,9 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/build/wowless/vcpkg/downloads \
     cmake --preset default \
     || { echo "=== vcpkg build logs ==="; \
-         find vcpkg/buildtrees -name '*.log' -newer vcpkg/buildtrees -exec \
-           sh -c 'echo "--- {} ---"; tail -n80 "{}"' \; ; exit 1; }
+         for f in vcpkg/buildtrees/*/install-*.log vcpkg/buildtrees/*/config-*.log; do \
+           [ -f "$f" ] && echo "--- $f ---" && tail -n100 "$f"; \
+         done; exit 1; }
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/build/wowless/vcpkg/downloads \
     cmake --build --preset default --target wowless_wow wow
