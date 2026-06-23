@@ -13,7 +13,7 @@
 # BASE is pinned to an immutable digest for reproducible builds. The
 # base-image sync agent bumps this digest via PR when the upstream
 # eloylp/agents-runner:latest tag advances; do not change it by hand.
-ARG BASE=ghcr.io/eloylp/agents-runner@sha256:970667ea659579da20cd94596814a510a25fc2ef5fb987c0f61f2d3a5f3beb9d
+ARG BASE=ghcr.io/eloylp/agents-runner@sha256:29d925662dc0977c379a1b8c0603fc8b792568f7d073a23ef9997fd86874e9e8
 
 # ── wowless builder ──────────────────────────────────────────────────────────
 # Clones latest wowless HEAD and builds wowless_wow with vcpkg/cmake, including
