@@ -46,6 +46,19 @@ The `-wowless` variant adds:
   cd /opt/wowless && ./wowless_wow run -p wow --addondir /path/to/addons
   ```
 
+## Pinned dependencies
+
+Both `BASE` (the upstream runner digest) and `WOWLESS_SHA` (the wowless commit)
+are pinned in the Dockerfile for reproducible builds. Each has a sync workflow
+that opens a PR when the upstream advances:
+
+| ARG | Synced by | Schedule |
+|-----|-----------|----------|
+| `BASE` | base-image sync agent | on upstream tag push |
+| `WOWLESS_SHA` | `sync-wowless.yml` | daily at 02:30 UTC |
+
+Do not change either value by hand — let the sync workflows handle it.
+
 ## Build
 
 Both images build and push automatically via GitHub Actions on every push to
