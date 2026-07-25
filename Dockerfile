@@ -15,28 +15,36 @@
 # eloylp/agents-runner:latest tag advances; do not change it by hand.
 ARG BASE=ghcr.io/eloylp/agents-runner@sha256:29d925662dc0977c379a1b8c0603fc8b792568f7d073a23ef9997fd86874e9e8
 
+# WOWLESS_SHA is pinned to a specific commit for reproducible builds.
+# The wowless sync workflow bumps this via PR when new commits land on
+# wowless/wowless main; do not change it by hand.
+ARG WOWLESS_SHA=c4bcb16cc326c684da42a67a1ec9947b26a8ab62
+
 # ── wowless builder ──────────────────────────────────────────────────────────
-# Clones latest wowless HEAD and builds wowless_wow with vcpkg/cmake, including
-# TACT client data download. The resulting binary + data are copied into the
-# runner-wowless target; all build tooling stays in this stage.
+# Checks out the pinned WOWLESS_SHA and builds wowless_wow with vcpkg/cmake,
+# including TACT client data download. The resulting binary + data are copied
+# into the runner-wowless target; all build tooling stays in this stage.
 #
 # BuildKit cache mounts persist vcpkg downloads and binary-cached packages
 # across builds via the GHA cache backend (mode=max exports exec.cachemount
-# data alongside layer cache). Since `git clone --depth 1` always fetches
-# HEAD, the layer cache is invalidated on every new wowless commit — but the
-# vcpkg cache mounts survive the layer miss, skipping the expensive
-# dependency download + compile even when the source changes.
+# data alongside layer cache). The vcpkg cache mounts survive layer misses,
+# skipping the expensive dependency download + compile even when the source
+# changes.
 #
 # BuildKit only processes this stage when the runner-wowless target is
 # requested; builds targeting runner skip it entirely.
 FROM alpine:3.22 AS wowless-builder
+ARG WOWLESS_SHA
 
 RUN apk add --no-cache \
     bash cmake curl g++ gcompat git linux-headers make musl-dev \
     ninja perl pkgconf python3 tar unzip zip
 
 WORKDIR /build/wowless
-RUN git clone --depth 1 https://github.com/wowless/wowless.git .
+RUN git init \
+    && git remote add origin https://github.com/wowless/wowless.git \
+    && git fetch --depth 1 origin "$WOWLESS_SHA" \
+    && git checkout FETCH_HEAD
 RUN git submodule update --init --depth 1
 RUN printf '%s\n' \
     'set(VCPKG_C_FLAGS "${VCPKG_C_FLAGS} -D_LARGEFILE64_SOURCE")' \
