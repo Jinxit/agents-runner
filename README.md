@@ -8,8 +8,8 @@ Two variants are published, both layered on the upstream
 
 | Image | What it adds |
 |-------|-------------|
-| `ghcr.io/jinxit/agents-runner` | tweakcc model-customizations patch |
-| `ghcr.io/jinxit/agents-runner-wowless` | tweakcc + Lua 5.1 toolchain + pre-built wowless |
+| `ghcr.io/jinxit/agents-runner` | pinned current Codex CLI + tweakcc model-customizations patch |
+| `ghcr.io/jinxit/agents-runner-wowless` | pinned current Codex CLI + tweakcc + Lua 5.1 toolchain + pre-built wowless |
 
 ## tweakcc
 
@@ -48,16 +48,19 @@ The `-wowless` variant adds:
 
 ## Pinned dependencies
 
-Both `BASE` (the upstream runner digest) and `WOWLESS_SHA` (the wowless commit)
-are pinned in the Dockerfile for reproducible builds. Each has a sync workflow
-that opens a PR when the upstream advances:
+`BASE` (the upstream runner digest), `CODEX_VERSION`, and `WOWLESS_SHA` (the
+wowless commit) are pinned in the Dockerfile for reproducible builds. The
+upstream image and wowless pins have sync workflows that open PRs when their
+upstreams advance:
 
 | ARG | Synced by | Schedule |
 |-----|-----------|----------|
 | `BASE` | base-image sync agent | on upstream tag push |
+| `CODEX_VERSION` | manual compatibility bump | as current Codex models require |
 | `WOWLESS_SHA` | `sync-wowless.yml` | daily at 02:30 UTC |
 
-Do not change either value by hand — let the sync workflows handle it.
+Do not change `BASE` or `WOWLESS_SHA` by hand — let their sync workflows
+handle them. Bump `CODEX_VERSION` deliberately after validating the runner.
 
 ## Build
 

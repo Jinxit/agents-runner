@@ -15,6 +15,11 @@
 # eloylp/agents-runner:latest tag advances; do not change it by hand.
 ARG BASE=ghcr.io/eloylp/agents-runner@sha256:29d925662dc0977c379a1b8c0603fc8b792568f7d073a23ef9997fd86874e9e8
 
+# The upstream runner currently ships an older Codex CLI. Pin the version here
+# so agents using the current Codex model catalog do not depend on a moving npm
+# latest tag or on the upstream image release cadence.
+ARG CODEX_VERSION=0.155.1
+
 # WOWLESS_SHA is pinned to a specific commit for reproducible builds.
 # The wowless sync workflow bumps this via PR when new commits land on
 # wowless/wowless main; do not change it by hand.
@@ -79,8 +84,11 @@ RUN mkdir -p /opt/wowless/build \
 # support the installed CC version the build will fail loudly — intentional.
 FROM ${BASE} AS runner
 
+ARG CODEX_VERSION
+
 USER root
-RUN npx -y tweakcc@4.0.14 --apply --patches model-customizations
+RUN npm install -g "@openai/codex@${CODEX_VERSION}" \
+    && npx -y tweakcc@4.0.14 --apply --patches model-customizations
 USER agents
 
 # ── runner-wowless (tweakcc + lua + wowless) ─────────────────────────────────
