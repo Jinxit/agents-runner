@@ -23,7 +23,7 @@ ARG CODEX_VERSION=0.155.1
 # WOWLESS_SHA is pinned to a specific commit for reproducible builds.
 # The wowless sync workflow bumps this via PR when new commits land on
 # wowless/wowless main; do not change it by hand.
-ARG WOWLESS_SHA=99b929ea92edd08edd5b4c1f9bcc7fa297b26d07
+ARG WOWLESS_SHA=53d25020d32b375ca757c6ea4248d08732105867
 
 # ── wowless builder ──────────────────────────────────────────────────────────
 # Checks out the pinned WOWLESS_SHA and builds wowless_wow with vcpkg/cmake,
